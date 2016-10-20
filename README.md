@@ -9,7 +9,6 @@ Download the code into a newFolder.
 cd ./newFolder
 make clean
 make
-
 ```
 
 This should produce a file in the current folder called ./ethrpc
@@ -18,7 +17,6 @@ Run the program thus:
 
 ```
 ./ethrpc start_block_num [end_block_num]
-
 ```
 
 If you provide two parameters you will get all blocks within that range. If you provide one parameter only, you will get just one block. If you ask for a range, you will get a JSON array.
@@ -39,6 +37,5 @@ The 'geth' node, unless it is started with a particular flag, does not support t
 
 ```
 geth --rpc --rpcapi="eth,net,web3,debug"
-
 ```
 Without the 'debug' flag, traceTransaction will not work.
