@@ -78,11 +78,11 @@ string getBlock(int num)
 	return callRPC("eth_getBlockByNumber", "["+quote(to_string(num))+",true]", to_string(num));
 }
 
+/*
 //-------------------------------------------------------------------------
 // These functions are not use here, but could easily be used to get
 // more information about transcations, etc.
 //-------------------------------------------------------------------------
-/*
 //-------------------------------------------------------------------------
 void padLeft(string& str, const size_t num, const char paddingChar=' ')
 {
@@ -92,20 +92,17 @@ void padLeft(string& str, const size_t num, const char paddingChar=' ')
 string getTransaction(const string& hash)
 {
     // assumes the hash starts with '0x'
-	string h = hash.substr(2,hash.length());padLeft(h,64,'0');
+    string h = hash.substr(2,hash.length());padLeft(h,64,'0');
     return callRPC("eth_getTransactionByHash", "[" + quote(h) +"]");
 }
 string getReceipt(const string& hash)
 {
-    // assumes the hash starts with '0x'
-	string h = hash.substr(2,hash.length());padLeft(h,64,'0');
+    string h = hash.substr(2,hash.length());padLeft(h,64,'0');
     return callRPC("eth_getTransactionReceipt", "[" + quote(h) +"]");
 }
 string getTransactionTrace(const string& hash)
 {
-	// 'geth' does not support tracing via RPC. I think 'parity' does.
-	return "not supported unless you start geth with the 'debug' api interface";
-    // assumes the hash starts with '0x'
+    return "traceTransaction not supported unless you start geth with the 'debug' api interface";
 //	string h = hash.substr(2,hash.length());padLeft(h,64,'0');
 //	return callRPC("debug_traceTransaction", "[" + quote(h) +"]");
 }
