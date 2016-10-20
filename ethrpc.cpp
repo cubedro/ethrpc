@@ -54,10 +54,12 @@ int main(int argc, const char *argv[])
 		cout << getBlock(i) << (i!=stop?",":"") << "\n";
 	if (stop-start) cout << "]";
 
-	//cout << "\n";
-	//cout << "getTransaction:\n"        << getTransaction     ("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
-	//cout << "getTransactionReceipt:\n" << getReceipt         ("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
-	//cout << "getTransactionTrace:\n"   << getTransactionTrace("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
+	/* - see below
+	cout << "\n";
+	cout << "getTransaction:\n"        << getTransaction     ("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
+	cout << "getTransactionReceipt:\n" << getReceipt         ("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
+	cout << "getTransactionTrace:\n"   << getTransactionTrace("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
+	*/
 
 	curl_clean();
 
@@ -102,7 +104,7 @@ string getReceipt(const string& hash)
 string getTransactionTrace(const string& hash)
 {
 	// 'geth' does not support tracing via RPC. I think 'parity' does.
-	return "not supported";
+	return "not supported unless you start geth with the 'debug' api interface";
     // assumes the hash starts with '0x'
 //	string h = hash.substr(2,hash.length());padLeft(h,64,'0');
 //	return callRPC("debug_traceTransaction", "[" + quote(h) +"]");
