@@ -1,3 +1,22 @@
+/*--------------------------------------------------------------------------------
+ The MIT License (MIT)
+ Copyright (c) 2016 Great Hill Corporation
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ --------------------------------------------------------------------------------*/
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -6,18 +25,16 @@
 using namespace std;
 
 //-------------------------------------------------------------------------
-// simple macros
-//-------------------------------------------------------------------------
-#define quote(a) (string("\"") + a + "\"")
 #define max(a,b) ((a>b)?a:b)
+extern void   curl_init          (void);
+extern void   curl_clean         (void);
+extern string getBlock           (int blockNum);
+extern string getTransaction     (const string& hash);
+extern string getReceipt         (const string& hash);
+extern string getTransactionTrace(const string& hash);
 
 //-------------------------------------------------------------------------
-extern void curl_init (void);
-extern void curl_clean(void);
-extern bool getBlock  (string& block, int num);
-
-//-------------------------------------------------------------------------
-// Confirm user input, setup 'curl', get the block, the cleanup and quit
+// Confirm user input, setup 'curl', get the block, cleanup, then quit
 //-------------------------------------------------------------------------
 int main(int argc, const char *argv[])
 {
@@ -31,43 +48,67 @@ int main(int argc, const char *argv[])
 
 	unsigned long start =                strtoul(argv[1], NULL, 10);
 	unsigned long stop  = (argc==3 ? max(strtoul(argv[2], NULL, 10), start+1) : start);
+
 	if (stop-start) cout << "[";
 	for (int i=start;i<=stop;i++)
-	{
-		string blockStr;
-		if (getBlock(blockStr,i))
-		{
-			cout << blockStr << (i!=stop?",":"") << "\n";
-// If you want to store to a file, uncomment this and comment above line
-//			string fileName = to_string(i) + ".json";
-//			std::ofstream out(fileName);
-//			out << blockStr << "\n";
-//			out.close();
-//			if (!(i%5)) { cout << i << "\r";cout.flush();}
-		}
-	}
+		cout << getBlock(i) << (i!=stop?",":"") << "\n";
 	if (stop-start) cout << "]";
 
+	//cout << "\n";
+	//cout << "getTransaction:\n"        << getTransaction     ("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
+	//cout << "getTransactionReceipt:\n" << getReceipt         ("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
+	//cout << "getTransactionTrace:\n"   << getTransactionTrace("0xb229fbd196624dc38a213b62a32974651d826c7aae4646bea1130b7d9adcf560") << "\n\n";
+
 	curl_clean();
+
 	return 0;
 }
 
 //-------------------------------------------------------------------------
 extern CURL  *curlPtr       ( bool cleanup=false );
 extern size_t write_callback( char *ptr, size_t size, size_t nmemb, void *userdata );
-extern string callRPC       ( const string& method, const string& params, const string& id );
+extern string callRPC       ( const string& method, const string& params, const string& id="");
+#define quote(a) (string("\"") + a + "\"")
 
 //-------------------------------------------------------------------------
-// Use 'curl' to ask the node for a block.
-//-------------------------------------------------------------------------
-bool getBlock(string& block, int num)
+string getBlock(int num)
 {
-	block = callRPC("eth_getBlockByNumber", "["+quote(to_string(num))+",true]", to_string(num));
-	return true;
+	return callRPC("eth_getBlockByNumber", "["+quote(to_string(num))+",true]", to_string(num));
 }
 
 //-------------------------------------------------------------------------
-// Use 'curl' to make an arbitrary rpc call
+// These functions are not use here, but could easily be used to get
+// more information about transcations, etc.
+//-------------------------------------------------------------------------
+/*
+//-------------------------------------------------------------------------
+void padLeft(string& str, const size_t num, const char paddingChar=' ')
+{
+    if (num > str.size())
+        str.insert(0,num-str.size(),paddingChar);
+}
+string getTransaction(const string& hash)
+{
+    // assumes the hash starts with '0x'
+	string h = hash.substr(2,hash.length());padLeft(h,64,'0');
+    return callRPC("eth_getTransactionByHash", "[" + quote(h) +"]");
+}
+string getReceipt(const string& hash)
+{
+    // assumes the hash starts with '0x'
+	string h = hash.substr(2,hash.length());padLeft(h,64,'0');
+    return callRPC("eth_getTransactionReceipt", "[" + quote(h) +"]");
+}
+string getTransactionTrace(const string& hash)
+{
+	// 'geth' does not support tracing via RPC. I think 'parity' does.
+	return "not supported";
+    // assumes the hash starts with '0x'
+//	string h = hash.substr(2,hash.length());padLeft(h,64,'0');
+//	return callRPC("debug_traceTransaction", "[" + quote(h) +"]");
+}
+*/
+
 //-------------------------------------------------------------------------
 string callRPC(const string& method, const string& params, const string& id)
 {
@@ -83,7 +124,7 @@ string callRPC(const string& method, const string& params, const string& id)
 	curl_easy_setopt(curlPtr(), CURLOPT_POSTFIELDSIZE, thePost.length());
 
 	string result;
-       	curl_easy_setopt(curlPtr(), CURLOPT_WRITEDATA,     &result);
+	curl_easy_setopt(curlPtr(), CURLOPT_WRITEDATA,     &result);
 	curl_easy_setopt(curlPtr(), CURLOPT_WRITEFUNCTION, write_callback);
 
 	CURLcode res = curl_easy_perform(curlPtr());
@@ -163,4 +204,3 @@ void curl_clean(void)
 {
 	curlPtr(true);
 }
-
